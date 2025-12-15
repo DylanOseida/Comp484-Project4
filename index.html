@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="https://glitch.com/favicon.ico" />
+    <title>CSUN Map Game</title>
+    <!-- The website stylesheet -->
+    <link rel="stylesheet" href="/style.css" />
+
+  </head>
+  <body>
+    <!-- Quiz content (Instructions, questions, score, timer) -->
+    <div id="quiz">
+      <div>
+        <h2>CSUN Map Quiz</h2>
+        <p id="instructions">
+          <b>Instructions to play:</b><br />Double click on the map the location
+          of...
+        </p>
+        <hr />
+        <div id="questions">
+          <div class="quiz-item" id="quiz-item"></div>
+          <div class="score-item" id="score-item"></div>
+        </div>
+      </div>
+      <section id="bottom-bar">
+        <div class="timer">00:00:00</div>
+        <button id="resetGameButton" onclick="resetGame()">Reset Game</button>
+      </section>
+    </div>
+    <!-- Map -->
+    <div id="map"></div>
+    <!-- Leaderboard -->
+    <div id="leaderboard">
+      <h2 id="leaderboard-header">Leaderboard</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Time</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-body"></tbody>
+      </table>
+    </div>
+    <!-- Necessary Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTgqsKVXFXaCyWdgLCVt-KsWrdcgP1Uvg"></script>
+    <script src="script.js" async></script>
+    <script>
+      
+      // Google Map is initialized 
+      const map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 34.239521097884236, lng: -118.52775305654792 },
+        zoom: 16.7,
+        disableDefaultUI: true, // Disables all default controls
+        gestureHandling: "none", // Disables gestures -- panning, zooming
+
+        styles: [ // Hides all building/street names
+          {
+            featureType: "all",
+            elementType: "labels",
+            stylers: [{ visibility: "off" }],
+          },
+        ],
+      });
+      
+      // User input: double clicks on map
+      map.addListener("dblclick", (event) => {
+        startTimer();
+        const userLat = event.latLng.lat();
+        const userLng = event.latLng.lng();
+
+        const target = locations[curindex];
+        curindex++;
+
+        // Checks if the user's click is within a 0.0005-degree range of the target location
+        const isCorrect =
+          userLat <= target.lat + 0.0005 &&
+          userLat >= target.lat - 0.0005 &&
+          userLng >= target.lng - 0.0005 &&
+          userLng <= target.lng + 0.0005;
+        
+        // Creating the rectangle
+        // Bounds of the rectangle established around the user's click location (margin of 0.0003)
+        const bounds = {
+          north: userLat + 0.0003,
+          south: userLat - 0.0003,
+          east: userLng + 0.0003,
+          west: userLng - 0.0003,
+        };
+        // Use the Rectangle class from the API library to draw rectangles
+        const rectangle = new google.maps.Rectangle({
+          strokeColor: isCorrect ? "green" : "red",
+          strokeOpacity: 1,
+          fillColor: isCorrect ? "green" : "red",
+          fillOpacity: 0.4,
+          map,
+          bounds: bounds,
+        });
+        // Rectangle added to array for the program to keep track
+        rectangles.push(rectangle);
+
+        // Feedback for the user: displays "Correct!" or "Incorrect" after selection is made
+        if (isCorrect) {
+          document.getElementById("score-item").innerHTML +=
+            "<span style='color: green;'>Correct!</span><br>";
+          score++;
+          showNextQuestion();
+        } else {
+          document.getElementById("score-item").innerHTML +=
+            "<span style='color: red;'>Incorrect!</span><br>";
+          showNextQuestion();
+        }
+      });
+      showNextQuestion();
+    </script>
+  </body>
+</html>
