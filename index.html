@@ -1,121 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="https://glitch.com/favicon.ico" />
-    <title>CSUN Map Game</title>
-    <!-- The website stylesheet -->
-    <link rel="stylesheet" href="/style.css" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSUN Map Challenge</title>
+    
+    <!-- Link to Google Maps API, replace 'YOUR_API_KEY' with your actual API key -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+    
+</head>
 
-  </head>
-  <body>
-    <!-- Quiz content (Instructions, questions, score, timer) -->
-    <div id="quiz">
-      <div>
-        <h2>CSUN Map Quiz</h2>
-        <p id="instructions">
-          <b>Instructions to play:</b><br />Double click on the map the location
-          of...
-        </p>
-        <hr />
-        <div id="questions">
-          <div class="quiz-item" id="quiz-item"></div>
-          <div class="score-item" id="score-item"></div>
-        </div>
-      </div>
-      <section id="bottom-bar">
-        <div class="timer">00:00:00</div>
-        <button id="resetGameButton" onclick="resetGame()">Reset Game</button>
-      </section>
-    </div>
-    <!-- Map -->
+<body>
+
+    <h1>CSUN Map Challenge</h1>
+    <p>Double-click on the map to indicate the location you think is correct.</p>
+
+    <!-- Map container -->
     <div id="map"></div>
-    <!-- Leaderboard -->
-    <div id="leaderboard">
-      <h2 id="leaderboard-header">Leaderboard</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Rank</th>
-            <th>Time</th>
-            <th>Score</th>
-          </tr>
-        </thead>
-        <tbody id="leaderboard-body"></tbody>
-      </table>
-    </div>
-    <!-- Necessary Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTgqsKVXFXaCyWdgLCVt-KsWrdcgP1Uvg"></script>
-    <script src="script.js" async></script>
+
     <script>
-      
-      // Google Map is initialized 
-      const map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 34.239521097884236, lng: -118.52775305654792 },
-        zoom: 16.7,
-        disableDefaultUI: true, // Disables all default controls
-        gestureHandling: "none", // Disables gestures -- panning, zooming
+        let map;
+        let correctAnswers = 0;
+        let questionsAnswered = 0;
 
-        styles: [ // Hides all building/street names
-          {
-            featureType: "all",
-            elementType: "labels",
-            stylers: [{ visibility: "off" }],
-          },
-        ],
-      });
-      
-      // User input: double clicks on map
-      map.addListener("dblclick", (event) => {
-        startTimer();
-        const userLat = event.latLng.lat();
-        const userLng = event.latLng.lng();
+        // The correct CSUN location (replace with the actual target location)
+        const targetLat = 34.237;  // Correct latitude for CSUN
+        const targetLng = -118.530;  // Correct longitude for CSUN
 
-        const target = locations[curindex];
-        curindex++;
+        // Initialize the map
+        function initMap() {
+            // CSUN coordinates
+            const csunLocation = { lat: targetLat, lng: targetLng };
 
-        // Checks if the user's click is within a 0.0005-degree range of the target location
-        const isCorrect =
-          userLat <= target.lat + 0.0005 &&
-          userLat >= target.lat - 0.0005 &&
-          userLng >= target.lng - 0.0005 &&
-          userLng <= target.lng + 0.0005;
-        
-        // Creating the rectangle
-        // Bounds of the rectangle established around the user's click location (margin of 0.0003)
-        const bounds = {
-          north: userLat + 0.0003,
-          south: userLat - 0.0003,
-          east: userLng + 0.0003,
-          west: userLng - 0.0003,
-        };
-        // Use the Rectangle class from the API library to draw rectangles
-        const rectangle = new google.maps.Rectangle({
-          strokeColor: isCorrect ? "green" : "red",
-          strokeOpacity: 1,
-          fillColor: isCorrect ? "green" : "red",
-          fillOpacity: 0.4,
-          map,
-          bounds: bounds,
-        });
-        // Rectangle added to array for the program to keep track
-        rectangles.push(rectangle);
+            // Create a new map centered on CSUN location
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: csunLocation,
+                zoom: 15,  // Zoom level
+                disableDefaultUI: true  // Disable all controls (zoom, etc.)
+            });
 
-        // Feedback for the user: displays "Correct!" or "Incorrect" after selection is made
-        if (isCorrect) {
-          document.getElementById("score-item").innerHTML +=
-            "<span style='color: green;'>Correct!</span><br>";
-          score++;
-          showNextQuestion();
-        } else {
-          document.getElementById("score-item").innerHTML +=
-            "<span style='color: red;'>Incorrect!</span><br>";
-          showNextQuestion();
+            // Add event listener for double-click
+            google.maps.event.addListener(map, 'dblclick', function(event) {
+                const clickedLocation = event.latLng;
+                const userLat = clickedLocation.lat();
+                const userLng = clickedLocation.lng();
+
+                // Check if the user clicked the correct location
+                checkLocation(userLat, userLng);
+            });
         }
-      });
-      showNextQuestion();
+
+        // Function to check if the clicked location is close enough to the target location
+        function checkLocation(userLat, userLng) {
+            const tolerance = 0.01;  // Latitude and longitude tolerance
+
+            if (Math.abs(userLat - targetLat) < tolerance && Math.abs(userLng - targetLng) < tolerance) {
+                correctAnswers++;
+                alert("Correct! You found the location!");
+
+                // Show the correct location on the map (green marker)
+                new google.maps.Marker({
+                    position: { lat: targetLat, lng: targetLng },
+                    map: map,
+                    title: "Correct location!",
+                    icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"  // Green marker
+                });
+            } else {
+                alert("Incorrect! Try again.");
+
+                // Optionally, highlight the correct location in red
+                new google.maps.Marker({
+                    position: { lat: targetLat, lng: targetLng },
+                    map: map,
+                    title: "Correct location!",
+                    icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"  // Red marker
+                });
+            }
+
+            // Track the number of questions answered
+            questionsAnswered++;
+
+            // After 5 questions, show the score
+            if (questionsAnswered >= 5) {
+                alert(`You got ${correctAnswers} out of 5 correct!`);
+            }
+        }
     </script>
-  </body>
+
+</body>
 </html>
