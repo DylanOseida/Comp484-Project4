@@ -106,7 +106,7 @@ function showNextQuestion() {
     return;
   }
 
-  // Append the next location instead of replacing
+  // Append the next location
   quizItem.innerHTML += locations[curindex].name + "<br>";
 }
 

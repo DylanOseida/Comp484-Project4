@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSUN Map Challenge</title>
-    <link rel="stylesheet" href="/style.css" />
-    <!-- Link to Google Maps API, replace 'YOUR_API_KEY' with your actual API key -->
-    
+    <link rel="stylesheet" href="style.css" />    
 </head>
 
 <body>
     <!-- Quiz content (Instructions, questions, score, timer) -->
-     <div id="container">
+    <div id="container">
 
         <div id="quiz">
         <div>
@@ -31,10 +29,10 @@
             <button id="resetGameButton" onclick="resetGame()">Reset Game</button>
         </section>
         </div>
+
         <!-- Map -->
         <div id="map"></div>
-        
-     </div>
+    </div>
 
 
     <!-- Necessary Scripts -->
@@ -45,7 +43,6 @@
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
-
     </script>
     <script src="script.js"></script>
 
